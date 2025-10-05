@@ -1,0 +1,231 @@
+<!--
+قالب اولیه صفحهٔ اصلی — نسخهٔ استاتیک
+راهنما کوتاه (فارسی):
+- این فایل یک صفحهٔ HTML کامل و آمادهٔ تست است. می‌توانید آن را در CodePen، VSCode یا مرورگر باز کنید.
+- راست‌چین (dir="rtl") فعال است و متن‌ها به فارسی قرار دارند.
+- نام‌گذاری کلاس‌ها و idها طوری انتخاب شده که فهم و تبدیل به قالب وردپرس یا React ساده باشد.
+
+نام‌گذاری مهم (قابل استفاده در توسعه):
+- site-header: هدر اصلی
+- hero: بنر بخش اول (Hero)
+- quran: بخش قرآن و ادعیه
+- donate: بخش خیریه / donation
+- martyrs: بخش شهیدشناسی
+- madahi: بخش مداحی / مداحی‌ها
+- article-card: کارت مقالات / شهید
+- audio-card: کارت صوتی (قرآن، دعا، مداحی)
+
+نکات توسعهٔ بعدی:
+- برای وردپرس: بخش article-card را در loop وردپرس جایگزین کنید و منابع (تصویر، صوت) را از media library بگیرید.
+- برای درگاه پرداخت آنلاین: تابع openDonate() را با ریدایرکت به درگاه امن (زرین‌پال / pay.ir یا PayPal/Stripe برای خارج) جایگزین کنید.
+- بهینه‌سازی: تصاویر را با WebP ذخیره کنید و lazy-loading اضافه کنید.
+
+-------------------------------
+--> 
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>خانه — نور هدایت</title>
+  <!-- فونت فارسی (در صورت دسترسی) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--primary:#0f7a49;--accent:#d4a017;--bg:#f7faf7;--danger:#e4572e;--text:#1b2b2b}
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:'Vazirmatn',Tahoma,Arial,serif;background:var(--bg);color:var(--text);line-height:1.6}
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:0 auto;padding:20px}
+
+    /* هدر */
+    .site-header{background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.06);position:sticky;top:0;z-index:100}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 20px}
+    .logo{display:flex;align-items:center;gap:10px}
+    .logo .brand{font-weight:700;color:var(--primary);font-size:20px}
+    .nav{display:flex;gap:10px}
+    .nav a{padding:8px 12px;border-radius:6px}
+    .nav a:hover{background:rgba(15,122,73,.06)}
+    .menu-toggle{display:none}
+
+    /* بنر */
+    .hero{background-image:linear-gradient(rgba(0,0,0,.3),rgba(0,0,0,.3)),url('https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1600&q=80');background-size:cover;background-position:center;color:#fff;padding:70px 0}
+    .hero .hero-inner{display:flex;flex-direction:column;gap:16px;align-items:flex-start}
+    .hero h1{margin:0;font-size:34px}
+    .hero p{max-width:700px}
+    .cta-group{display:flex;gap:12px}
+    .btn{display:inline-block;padding:10px 16px;border-radius:8px;font-weight:600;cursor:pointer}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);color:#fff}
+
+    /* بخش‌ها */
+    .section{background:#fff;border-radius:10px;padding:18px;margin-top:20px;box-shadow:0 6px 18px rgba(0,0,0,.03)}
+    .grid{display:grid;gap:16px}
+    .grid-3{grid-template-columns:repeat(3,1fr)}
+    @media(max-width:900px){.grid-3{grid-template-columns:repeat(2,1fr)}.hero h1{font-size:28px}}
+    @media(max-width:600px){.container{padding:12px}.header-inner{flex-direction:column;align-items:flex-start}.nav{flex-wrap:wrap}.grid-3{grid-template-columns:1fr}.hero{padding:40px 0}.menu-toggle{display:block}}
+
+    .quran-list{display:flex;flex-direction:column;gap:10px}
+    .audio-card{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;background:linear-gradient(180deg,#ffffff,#fbfffb);box-shadow:0 2px 6px rgba(0,0,0,.04)}
+    .donate-cta{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+    .progress{height:10px;width:100%;background:#eee;border-radius:6px;overflow:hidden}
+    .progress-bar{height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:55%}
+    .articles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .article-card{padding:12px;border-radius:8px;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.03)}
+    @media(max-width:900px){.articles-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:600px){.articles-grid{grid-template-columns:1fr}}
+    .footer{margin-top:24px;padding:20px;text-align:center;color:#6b6b6b}
+
+    /* کمکی */
+    .small{font-size:13px;color:#5b5b5b}
+    .badge{background:var(--accent);padding:6px 8px;border-radius:6px;color:#fff;font-weight:700}
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="logo">
+      <div class="brand">نور هدایت</div>
+      <div class="small">ادعیه • قرآن • شهیدشناسی • خیریه</div>
+    </div>
+
+    <nav class="nav" aria-label="منوی اصلی">
+      <a href="#home">خانه</a>
+      <a href="#quran">قرآن و ادعیه</a>
+      <a href="#martyrs">شهیدشناسی</a>
+      <a href="#imam">امام زمان</a>
+      <a href="#madahi">مداحی</a>
+      <a href="#donate" class="badge">کمک کنید</a>
+    </nav>
+
+    <button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu">منو</button>
+  </div>
+</header>
+
+<main class="container" id="home">
+
+  <section class="hero" role="region" aria-label="بنر اصلی">
+    <div class="hero-inner">
+      <h1>برای قلب‌ت آرامش بیار — دعای امروزت رو بشنو</h1>
+      <p>پخش آنلاین قرآن، آیات و ادعیه، معرفی شهدا و یک پل برای کمک به نیازمندان. با ما همراه شو.</p>
+      <div class="cta-group">
+        <a href="#quran" class="btn btn-primary" id="cta-quran">گوش دادن قرآن</a>
+        <a href="#donate" class="btn btn-ghost" id="cta-donate">همین حالا کمک کن</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="quran" class="section" aria-label="قرآن و ادعیه">
+    <h2>قرآن و ادعیه</h2>
+    <p class="small">پخش دسته‌ای از سوره‌ها و دعاهای منتخب. برای اضافه کردن سوره جدید، فایل صوتی را آپلود و مسیر را در بخش data-src قرار دهید.</p>
+
+    <div class="grid grid-3 quran-list">
+      <div class="audio-card" data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3">
+        <div style="flex:1">
+          <strong>سوره فاتحه</strong>
+          <div class="small">قاری: نمونه</div>
+        </div>
+        <audio controls preload="none" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+      </div>
+
+      <div class="audio-card" data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3">
+        <div style="flex:1"><strong>دعای کمیل</strong><div class="small">خوانش: نمونه</div></div>
+        <audio controls preload="none" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"></audio>
+      </div>
+
+      <div class="audio-card" data-src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3">
+        <div style="flex:1"><strong>زیارت عاشورا</strong><div class="small">خوانش: نمونه</div></div>
+        <audio controls preload="none" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"></audio>
+      </div>
+    </div>
+  </section>
+
+  <section id="donate" class="section donate-section">
+    <h2>کمک و خیریه</h2>
+    <p class="small">با کمک شما می‌توانیم به کودکان یتیم و زندانیان نیازمند کمک کنیم. شفافیت برای ما مهم است؛ گزارش هزینه‌ها در این بخش قرار خواهد گرفت.</p>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:280px">
+        <p class="small">هدف ماه: ۵۰,۰۰۰,۰۰۰ تومان</p>
+        <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55"><div class="progress-bar"></div></div>
+        <p class="small">جمع‌آوری شده: ۲۷,۵۰۰,۰۰۰ تومان</p>
+      </div>
+
+      <div style="width:260px">
+        <button class="btn btn-primary" onclick="openDonate()">اهدای آنلاین</button>
+        <button class="btn" onclick="showDonationInfo()">اطلاعات بیشتر</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="martyrs" class="section">
+    <h2>شهیدشناسی</h2>
+    <p class="small">آخرین مقالات و زندگی‌نامه شهدا</p>
+    <div class="articles-grid">
+      <article class="article-card">
+        <h3>شهید محمدرضا — روایت زندگی</h3>
+        <p class="small">خلاصه‌ای از زندگی، خاطرات و وصیت‌نامه.</p>
+        <a class="small" href="#">ادامه مطلب →</a>
+      </article>
+
+      <article class="article-card">
+        <h3>شهید حسن — ایثار و عشق</h3>
+        <p class="small">معرفی، عکس‌ها و وصیت.</p>
+        <a class="small" href="#">ادامه مطلب →</a>
+      </article>
+
+      <article class="article-card">
+        <h3>شهید علی — از کودکی تا شهادت</h3>
+        <p class="small">روایتی جذاب و الهام‌بخش.</p>
+        <a class="small" href="#">ادامه مطلب →</a>
+      </article>
+    </div>
+  </section>
+
+  <section id="madahi" class="section">
+    <h2>مداحی و نوحه</h2>
+    <p class="small">پخش ویدئو و صوت مداحان</p>
+    <div class="grid grid-3">
+      <div class="article-card"><strong>حاج محمود کریمی</strong><div class="small">نوحه نمونه</div></div>
+      <div class="article-card"><strong>میثم مطیعی</strong><div class="small">نوحه نمونه</div></div>
+      <div class="article-card"><strong>مداح محلی</strong><div class="small">نوحه نمونه</div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <p class="small">© ۱۴۰۴ نور هدایت — طراحی اولیه — تمام حقوق محفوظ است</p>
+  <p class="small">آدرس تماس: info@example.com</p>
+</footer>
+
+<script>
+  /* JS کوتاه برای تعاملات اولیه */
+  /* نام‌گذاری فانکشن‌ها و ID ها ساده و معنادار است */
+  function scrollToId(id){
+    document.querySelector('#'+id)?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  document.getElementById('cta-quran').addEventListener('click',function(e){e.preventDefault();scrollToId('quran')});
+  document.getElementById('cta-donate').addEventListener('click',function(e){e.preventDefault();scrollToId('donate')});
+
+  /* نمادین: پنجره‌ی اهدای شبیه‌سازی شده */
+  function openDonate(){
+    alert('درگاه پرداخت به صورت آزمایشی باز می‌شود. برای راه‌اندازی واقعی نیاز به اتصال به درگاه پرداخت دارید.');
+  }
+  function showDonationInfo(){
+    alert('گزارش‌ها، لیست خانواده‌ها و شفافیت مالی در این بخش نمایش خواهد یافت.');
+  }
+
+  /* بهبود کارایی: فقط یک پلیر را همزمان پخش کن */
+  document.querySelectorAll('audio').forEach(function(a){
+    a.addEventListener('play',function(){
+      document.querySelectorAll('audio').forEach(function(other){if(other!==a) other.pause();});
+    });
+  });
+</script>
+
+</body>
+</html>
